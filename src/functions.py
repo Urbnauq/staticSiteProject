@@ -1,4 +1,4 @@
-from textnode import TextNode, text_type_text, text_type_image, text_type_link
+from textnode import TextNode, text_type_text, text_type_image, text_type_link, text_type_bold, text_type_code, text_type_italic
 
 import re
 
@@ -47,6 +47,10 @@ def extract_markdown_links(text):
 #         old_node.text.split("!")
 #         node_text_extract = extract_markdown_images(old_node.text)
         
+#         if len(node_text_extract) == 0:
+#             new_nodes.append(old_node)
+#             continue
+        
 #         new_nodes.append(TextNode(node_text_extract[0][0], text_type_image, node_text_extract[0][1]))
 #         new_nodes.append(TextNode(node_text_extract[1][0], text_type_image, node_text_extract[1][1]))
         
@@ -70,6 +74,10 @@ def extract_markdown_links(text):
 #         old_node.text.split()
 #         node_text_extract = extract_markdown_links(old_node.text)
         
+#         if len(node_text_extract) == 0:
+#             new_nodes.append(old_node)
+#             continue
+        
 #         new_nodes.append(TextNode(node_text_extract[0][0], text_type_link, node_text_extract[0][1]))
 #         new_nodes.append(TextNode(node_text_extract[1][0], text_type_link, node_text_extract[1][1]))
         
@@ -81,6 +89,82 @@ def extract_markdown_links(text):
         
 #     return new_nodes
 
+def text_to_textnode(text):
+    nodes = [TextNode(text, text_type_text)]
+    
+    bold = "**"
+    italic = "*"
+    code = "`"
+    
+    nodes = split_nodes_delimiter(nodes, bold, text_type_bold)
+    nodes = split_nodes_delimiter(nodes, italic, text_type_italic)
+    nodes = split_nodes_delimiter(nodes, code, text_type_code)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    
+    return nodes
+
+def markdown_to_blocks(markdown):
+    splited = markdown.split('\n\n')
+    
+    blocks = []
+    for split in splited:
+        if split == "":
+            continue
+        blocks.append(split.strip())
+    
+    return blocks
+
+block_type_paragraph = "paragraph"
+block_type_heading = "heading"
+block_type_code = "code"
+block_type_quote = "quote"
+block_type_unordered_list = "unordered_list"
+block_type_ordered_list = "ordered_list"
+
+def block_to_block_type(block):
+    if (block[:2] == "# "
+        or block[:3] == "## "
+        or block[:4] == "### "
+        or block[:5] == "#### "
+        or block[:6] == "##### "
+        or block[:7] == "###### "):
+        return block_type_heading
+        
+    if block[:3] == "```" and block[-3:] == "```" :
+        return block_type_code
+    
+    if block[:1] == ">":
+        
+        block = block.split("\n")
+        for line in block:
+            if line[:1] != ">":
+                return block_type_paragraph
+        
+        return block_type_quote
+
+    if block[:1] == "*" or block[:1] == "-" :
+        
+        block = block.split("\n")
+        for line in block:
+            if line[:1] != "*" or line[:1] != "-":
+                return block_type_paragraph
+        
+        return block_type_unordered_list
+    
+    if block[:2] == "1.":
+
+        block = block.split("\n")
+        num = 1
+        for line in range(len(block)):
+            if block[line][:2] != f"{num}.":
+                return block_type_paragraph
+            num += 1
+        
+        return block_type_ordered_list
+    
+    return block_type_paragraph
+        
 def split_nodes_image(old_nodes):
     new_nodes = []
     for old_node in old_nodes:
