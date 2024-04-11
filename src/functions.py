@@ -104,7 +104,7 @@ def text_to_textnode(text):
     
     return nodes
 
-def markdown_to_blocks(markdown):
+def markdown_to_blocks(markdown):  # Split a markdown document into blocks
     splited = markdown.split('\n\n')
     
     blocks = []
@@ -122,7 +122,7 @@ block_type_quote = "quote"
 block_type_unordered_list = "unordered_list"
 block_type_ordered_list = "ordered_list"
 
-def block_to_block_type(block):
+def block_to_block_type(block): # Block to block type
     if (block[:2] == "# "
         or block[:3] == "## "
         or block[:4] == "### "
@@ -193,6 +193,9 @@ def split_nodes_image(old_nodes):
         if original_text != "":
             new_nodes.append(TextNode(original_text, text_type_text))
     return new_nodes
+
+def markdown_to_html_node(markdown):
+    pass
 
 def split_nodes_link(old_nodes):
     new_nodes = []
